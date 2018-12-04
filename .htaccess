@@ -1,0 +1,60 @@
+addDefaultCharset UTF-8
+#Определение главной страницы при обращении к домену
+DirectoryIndex index.html
+allow from all
+#домен без www
+Options +FollowSymlinks
+RewriteEngine On
+RewriteCond %{HTTP_HOST} ^www.flagmancom.ru$ [NC]
+RewriteRule ^(.*)$ http://flagmancom.ru/$1 [R=301,L]
+
+#Удаление расширения из адресной строки
+
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}\.html -f
+RewriteRule ^(.*)$ $1.html
+
+<ifModule mod_headers.c>
+#кэшировать html и htm файлы на один день
+<FilesMatch «\.(html|htm)$»>
+Header set Cache-Control «max-age=43200»
+</FilesMatch>
+#кэшировать css, javascript и текстовые файлы на одну неделю
+<FilesMatch «\.(js|css|txt)$»>
+Header set Cache-Control «max-age=604800»
+</FilesMatch>
+#кэшировать флэш и изображения на месяц
+<FilesMatch «\.(flv|swf|ico|gif|jpg|jpeg|png)$»>
+Header set Cache-Control «max-age=2592000»
+</FilesMatch>
+#отключить кэширование
+<FilesMatch «\.(pl|php|cgi|spl|scgi|fcgi)$»>
+Header unset Cache-Control
+</FilesMatch>
+</IfModule>
+<ifModule mod_expires.c>
+ExpiresActive On
+#по умолчанию кеш в 5 секунд
+ExpiresDefault "access plus 5 seconds"
+#кэшировать флэш и изображения на месяц
+ExpiresByType image/x-icon "access plus 604800 seconds"
+ExpiresByType image/jpeg "access plus 604800 seconds"
+ExpiresByType image/png "access plus 604800 seconds"
+ExpiresByType image/gif "access plus 604800 seconds"
+ExpiresByType application/x-shockwave-flash "access plus 604800 seconds"
+#кэшировать css, javascript и текстовые файлы на одну неделю
+ExpiresByType text/css "access plus 604800 seconds"
+ExpiresByType text/javascript "access plus 604800 seconds"
+ExpiresByType application/javascript "access plus 604800 seconds"
+ExpiresByType application/x-javascript "access plus 604800 seconds"
+#кэшировать html и htm файлы на один день
+ExpiresByType text/html "access plus 43200 seconds"
+#кэшировать xml файлы на десять минут
+ExpiresByType application/xhtml+xml "access plus 600 seconds"
+</ifModule>
+SetEnvIfNoCase Referer "^http://www.flagmancom.ru" local_ref=1
+SetEnvIfNoCase Referer "^http://flagmancom.ru" local_ref=1
+<FilesMatch ".(gif|jpg)">
+Order Allow,Deny
+Allow from env=local_ref
+</FilesMatch>
